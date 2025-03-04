@@ -2,13 +2,15 @@ import express, { Request, Response, NextFunction } from 'express';
 import { createServer } from 'http';
 import path from 'path';
 import { WebSocket, WebSocketServer } from 'ws';
-import fs from 'fs';
+import { PrismaClient } from '@prisma/client'
+
+const prisma = new PrismaClient();
 
 const app = express();
 const server = createServer(app);
 
 let core_ws: WebSocket | null = null;
-let calendar_ws = null;
+let calendar_ws: WebSocketServer | null = null;
 
 app.use((err: Error, req: Request, res: Response, next: NextFunction) => {
     console.error('Request error:', err);
@@ -62,25 +64,79 @@ const connectToWebSocketServer = async (url: string, retries: number = 50, delay
     });
 };
 
-const createWebSocket = (handleIncomingMessage: (ws: WebSocketServer, message: string) => void) => {
-    const ws = new WebSocketServer({ server });
+const createWebSocket = () => {
+    const wss = new WebSocketServer({ server });
 
-    ws.on('connection', (ws) => {
-        ws.on('message', handleIncomingMessage);
+    wss.on('error', (err) => {
+        console.error('WebSocket server error:', err);
     });
 
-    return ws;
+
+    return wss;
 }
 
 const start = async () => {
     try {
-        calendar_ws = createWebSocket((ws, message) => {
-            ws.clients.forEach((client) => {
-                if (client.readyState === WebSocket.OPEN) {
-                    client.send(message);
+        calendar_ws = createWebSocket() as WebSocketServer;
+
+        calendar_ws.on('connection', async (ws) => {
+            ws.send(JSON.stringify({
+                type: 'load_events',
+                events: await prisma.event.findMany()
+            }));
+
+            ws.on('message', async (message) => {
+                const parsedMessage = JSON.parse(message.toString());
+                if (parsedMessage.type === 'add_event') {
+                    const { title, description, start, end, color, date } = parsedMessage.data;
+                    const [startHour, startMinute] = start.split(':').map(Number);
+                    const [endHour, endMinute] = end.split(':').map(Number);
+                    const eventDate = new Date(date);
+
+                    const startDateTime = new Date(eventDate);
+                    startDateTime.setHours(startHour, startMinute);
+
+                    const endDateTime = new Date(eventDate);
+                    endDateTime.setHours(endHour, endMinute);
+
+                    await prisma.event.create({
+                        data: {
+                            title,
+                            description,
+                            start: startDateTime,
+                            end: endDateTime,
+                            color
+                        }
+                    });
+
+                    ws.send(JSON.stringify({
+                        type: 'event_added',
+                        events: await prisma.event.findMany()
+                    }));
+
+                    if (!calendar_ws) { // Can't happen, but TypeScript doesn't know that
+                        return;
+                    }
+
+                    calendar_ws.clients.forEach(client => {
+                        if (client.readyState === WebSocket.OPEN) {
+                            client.send(JSON.stringify({
+                                type: 'event_added',
+                                event: {
+                                    title,
+                                    description,
+                                    start,
+                                    end,
+                                    color,
+                                    date
+                                }
+                            }));
+                        }
+                    });
                 }
             });
         });
+
         core_ws = await connectToWebSocketServer(process.env.CORE_WS_URL || 'ws://core-app:3000');
         core_ws.send(JSON.stringify({
             type: "create",
