@@ -17,6 +17,9 @@ RUN cp -r frontend/public backend/src
 
 WORKDIR /app/backend
 
+RUN npm install
+RUN npm install -g prisma
+
 EXPOSE 3001
 
-CMD ["npm", "run", "dev"]
+CMD npx prisma migrate deploy && npx prisma generate && npx prisma db push --accept-data-loss && npm run dev
