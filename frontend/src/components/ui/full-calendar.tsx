@@ -290,7 +290,7 @@ const EventGroup = ({
                                                 )}
                                                 style={{
                                                     top: `${startPosition * 100}%`,
-                                                    height: `${hoursDifference * 102}%`,
+                                                    height: `${Math.min(hoursDifference, 24 - event.start.getHours() - startPosition) * 102}%`,
                                                 }}
                                                 onContextMenu={(e) => e.stopPropagation()} // Prevent context menu on event
                                             >
