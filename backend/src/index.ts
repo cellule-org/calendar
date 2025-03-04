@@ -2,6 +2,7 @@ import express, { Request, Response, NextFunction } from 'express';
 import { createServer } from 'http';
 import path from 'path';
 import { WebSocket, WebSocketServer } from 'ws';
+import fs from 'fs';
 
 const app = express();
 const server = createServer(app);
@@ -21,6 +22,11 @@ app.get("/", (req: Request, res: Response) => {
 app.get("/assets/:filename", (req: Request, res: Response) => {
     const { filename } = req.params;
     res.sendFile(path.join(__dirname, 'dist', 'assets', filename));
+});
+
+app.get("/locales/:lng/translation.json", (req: Request, res: Response) => {
+    const { lng } = req.params;
+    res.sendFile(path.join(__dirname, 'dist', 'locales', lng, 'translation.json'));
 });
 
 const messageHandler = (message: string) => {
