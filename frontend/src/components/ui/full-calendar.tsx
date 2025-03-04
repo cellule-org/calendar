@@ -43,7 +43,18 @@ import {
     SelectTrigger,
     SelectValue,
 } from "@/components/ui/select"
+
+import {
+    ContextMenu,
+    ContextMenuContent,
+    ContextMenuItem,
+    ContextMenuLabel,
+    ContextMenuSeparator,
+    ContextMenuTrigger,
+} from "@/components/ui/context-menu"
+
 import { useTranslation } from 'react-i18next';
+import { AddEventModal } from './add-event';
 
 const monthEventVariants = cva('size-2 rounded-full', {
     variants: {
@@ -53,6 +64,12 @@ const monthEventVariants = cva('size-2 rounded-full', {
             green: 'bg-green-500',
             pink: 'bg-pink-500',
             purple: 'bg-purple-500',
+            red: 'bg-red-500',
+            yellow: 'bg-yellow-500',
+            teal: 'bg-teal-500',
+            cyan: 'bg-cyan-500',
+            orange: 'bg-orange-500',
+            indigo: 'bg-indigo-500',
         },
     },
     defaultVariants: {
@@ -68,6 +85,12 @@ const dayEventVariants = cva('font-bold border-l-4 rounded p-2 text-xs', {
             green: 'bg-green-500/30 text-green-600 border-green-500',
             pink: 'bg-pink-500/30 text-pink-600 border-pink-500',
             purple: 'bg-purple-500/30 text-purple-600 border-purple-500',
+            red: 'bg-red-500/30 text-red-600 border-red-500',
+            yellow: 'bg-yellow-500/30 text-yellow-600 border-yellow-500',
+            teal: 'bg-teal-500/30 text-teal-600 border-teal-500',
+            cyan: 'bg-cyan-500/30 text-cyan-600 border-cyan-500',
+            orange: 'bg-orange-500/30 text-orange-600 border-orange-500',
+            indigo: 'bg-indigo-500/30 text-indigo-600 border-indigo-500',
         },
     },
     defaultVariants: {
@@ -228,32 +251,62 @@ const EventGroup = ({
     events: CalendarEvent[];
     hour: Date;
 }) => {
-    return (
-        <div className="h-20 border-t last:border-b">
-            {events
-                .filter((event) => isSameHour(event.start, hour))
-                .map((event) => {
-                    const hoursDifference =
-                        differenceInMinutes(event.end, event.start) / 60;
-                    const startPosition = event.start.getMinutes() / 60;
+    const [createOpen, setCreateOpen] = useState(false);
+    const [selectedDate, setSelectedDate] = useState<Date | null>(null);
 
-                    return (
-                        <div
-                            key={event.id}
-                            className={cn(
-                                'relative',
-                                dayEventVariants({ variant: event.color })
-                            )}
-                            style={{
-                                top: `${startPosition * 100}%`,
-                                height: `${hoursDifference * 100}%`,
-                            }}
-                        >
-                            {event.title}
-                        </div>
-                    );
-                })}
-        </div>
+    const { locale } = useCalendar();
+    const { t } = useTranslation();
+
+    return (
+        <>
+            <ContextMenu>
+                <ContextMenuTrigger>
+                    <div className="h-20 border-t last:border-b">
+                        {events
+                            .filter((event) => isSameHour(event.start, hour))
+                            .map((event) => {
+                                const hoursDifference =
+                                    differenceInMinutes(event.end, event.start) / 60;
+                                const startPosition = event.start.getMinutes() / 60;
+
+                                return (
+                                    <div
+                                        key={event.id}
+                                        className={cn(
+                                            'relative',
+                                            dayEventVariants({ variant: event.color })
+                                        )}
+                                        style={{
+                                            top: `${startPosition * 100}%`,
+                                            height: `${hoursDifference * 100}%`,
+                                        }}
+                                    >
+                                        {event.title}
+                                    </div>
+                                );
+                            })}
+                    </div>
+                </ContextMenuTrigger>
+                <ContextMenuContent>
+                    <ContextMenuLabel>{format(hour, 'EEEE, dd/MM HH:mm', { locale })}</ContextMenuLabel>
+                    <ContextMenuSeparator />
+                    <ContextMenuItem
+                        onClick={() => {
+                            setCreateOpen(true);
+                            setSelectedDate(hour);
+                        }}
+                    >
+                        {t('add_event')}
+                    </ContextMenuItem>
+                    <ContextMenuItem
+                        onClick={() => console.log('Remove event')}
+                    >
+                        {t('remove_event')}
+                    </ContextMenuItem>
+                </ContextMenuContent>
+            </ContextMenu>
+            <AddEventModal isOpen={createOpen} onOpenChange={setCreateOpen} date={selectedDate || undefined} />
+        </>
     );
 };
 
@@ -265,7 +318,7 @@ const CalendarDayView = () => {
     const hours = [...Array(24)].map((_, i) => setHours(date, i));
 
     return (
-        <div className="flex relative pt-2 overflow-auto h-full">
+        <div className="flex relative pt-2 overflow-x-hidden overflow-y-auto h-full">
             <TimeTable />
             <div className="flex-1">
                 {hours.map((hour) => (
@@ -304,7 +357,7 @@ const CalendarWeekView = () => {
     if (view !== 'week') return null;
 
     return (
-        <div className="flex flex-col relative overflow-auto h-full">
+        <div className="flex flex-col relative overflow-hidden overflow-y-auto h-full">
             <div className="flex sticky top-0 bg-card z-10 border-b mb-3">
                 <div className="w-12"></div>
                 {headerDays.map((date, i) => (
@@ -359,7 +412,11 @@ const CalendarWeekView = () => {
 };
 
 const CalendarMonthView = () => {
-    const { date, view, events, locale } = useCalendar();
+    const [createOpen, setCreateOpen] = useState(false);
+    const [selectedDate, setSelectedDate] = useState<Date | null>(null);
+
+    const { date, view, events, locale, setView, setDate } = useCalendar();
+    const { t } = useTranslation();
 
     const monthDates = useMemo(() => getDaysInMonth(date), [date]);
     const weekDays = useMemo(() => generateWeekdays(locale), [locale]);
@@ -367,72 +424,101 @@ const CalendarMonthView = () => {
     if (view !== 'month') return null;
 
     return (
-        <div className="h-full flex flex-col">
-            <div className="grid grid-cols-7 gap-px sticky top-0 bg-background border-b">
-                {weekDays.map((day, i) => (
-                    <div
-                        key={day}
-                        className={cn(
-                            'mb-2 text-right text-sm text-muted-foreground pr-2',
-                            [0, 6].includes(i) && 'text-muted-foreground/50'
-                        )}
-                    >
-                        {day}
-                    </div>
-                ))}
-            </div>
-            <div className="grid overflow-hidden -mt-px flex-1 auto-rows-fr p-px grid-cols-7 gap-px">
-                {monthDates.map((_date) => {
-                    const currentEvents = events.filter((event) =>
-                        isSameDay(event.start, _date)
-                    );
-
-                    return (
+        <>
+            <div className="h-full flex flex-col">
+                <div className="grid grid-cols-7 gap-px sticky top-0 bg-background border-b">
+                    {weekDays.map((day, i) => (
                         <div
+                            key={day}
                             className={cn(
-                                'ring-1 p-2 text-sm text-muted-foreground ring-border overflow-auto',
-                                !isSameMonth(date, _date) && 'text-muted-foreground/50'
+                                'mb-2 text-right text-sm text-muted-foreground pr-2',
+                                [0, 6].includes(i) && 'text-muted-foreground/50'
                             )}
-                            key={_date.toString()}
                         >
-                            <span
-                                className={cn(
-                                    'size-6 grid place-items-center rounded-full mb-1 sticky top-0',
-                                    isToday(_date) && 'bg-primary text-primary-foreground'
-                                )}
-                            >
-                                {format(_date, 'd')}
-                            </span>
-
-                            {currentEvents.map((event) => {
-                                return (
-                                    <div
-                                        key={event.id}
-                                        className="px-1 rounded text-sm flex items-center gap-1"
-                                    >
-                                        <div
-                                            className={cn(
-                                                'shrink-0',
-                                                monthEventVariants({ variant: event.color })
-                                            )}
-                                        ></div>
-                                        <span className="flex-1 truncate">{event.title}</span>
-                                        <time className="tabular-nums text-muted-foreground/50 text-xs">
-                                            {format(event.start, 'HH:mm')}
-                                        </time>
-                                    </div>
-                                );
-                            })}
+                            {day}
                         </div>
-                    );
-                })}
+                    ))}
+                </div>
+                <div className="grid overflow-hidden -mt-px flex-1 auto-rows-fr p-px grid-cols-7 gap-px">
+                    {monthDates.map((_date) => {
+                        const currentEvents = events.filter((event) =>
+                            isSameDay(event.start, _date)
+                        );
+
+                        return (
+                            <ContextMenu>
+                                <ContextMenuTrigger>
+                                    <div
+                                        className={cn(
+                                            'ring-1 p-2 text-sm text-muted-foreground ring-border overflow-auto h-full',
+                                            !isSameMonth(date, _date) && 'text-muted-foreground/50'
+                                        )}
+                                        key={_date.toString()}
+                                    >
+                                        <span
+                                            className={cn(
+                                                'size-6 grid place-items-center rounded-full mb-1 sticky top-0 cursor-pointer',
+                                                isToday(_date) && 'bg-primary text-primary-foreground'
+                                            )}
+
+                                            onClick={() => {
+                                                setView('day');
+                                                setDate(_date);
+                                            }}
+                                        >
+                                            {format(_date, 'd')}
+                                        </span>
+
+                                        {currentEvents.map((event) => {
+                                            return (
+                                                <div
+                                                    key={event.id}
+                                                    className="px-1 rounded text-sm flex items-center gap-1"
+                                                >
+                                                    <div
+                                                        className={cn(
+                                                            'shrink-0',
+                                                            monthEventVariants({ variant: event.color })
+                                                        )}
+                                                    ></div>
+                                                    <span className="flex-1 truncate">{event.title}</span>
+                                                    <time className="tabular-nums text-muted-foreground/50 text-xs">
+                                                        {format(event.start, 'HH:mm')}
+                                                    </time>
+                                                </div>
+                                            );
+                                        })}
+                                    </div>
+                                </ContextMenuTrigger>
+                                <ContextMenuContent>
+                                    <ContextMenuLabel>{format(_date, 'EEEE, dd/MM', { locale })}</ContextMenuLabel>
+                                    <ContextMenuSeparator />
+                                    <ContextMenuItem onClick={() => {
+                                        setSelectedDate(_date);
+                                        setCreateOpen(true);
+                                    }}>
+                                        {t('add_event')}
+                                    </ContextMenuItem>
+                                    <ContextMenuItem onClick={() => console.log('Remove event')}>
+                                        {t('remove_event')}
+                                    </ContextMenuItem>
+                                </ContextMenuContent>
+                            </ContextMenu>
+                        );
+                    })}
+                </div>
             </div>
-        </div>
+            <AddEventModal isOpen={createOpen} onOpenChange={setCreateOpen} date={selectedDate || undefined} />
+        </>
     );
 };
 
 const CalendarYearView = () => {
-    const { view, date, today, locale } = useCalendar();
+    const [createOpen, setCreateOpen] = useState(false);
+    const [selectedDate, setSelectedDate] = useState<Date | null>(null);
+
+    const { view, date, today, locale, setView, setDate } = useCalendar();
+    const { t } = useTranslation();
 
     const months = useMemo(() => {
         if (!view) {
@@ -449,48 +535,78 @@ const CalendarYearView = () => {
     if (view !== 'year') return null;
 
     return (
-        <div className="grid grid-cols-4 gap-10 overflow-auto h-full">
-            {months.map((days, i) => (
-                <div key={days[0].toString()}>
-                    <span className="text-xl">{i + 1}</span>
+        <>
+            <div className="grid grid-cols-4 gap-10 overflow-auto h-full">
+                {months.map((days, i) => (
+                    <div key={days[0].toString()}>
+                        <span className="text-xl">{i + 1}</span>
 
-                    <div className="grid grid-cols-7 gap-2 my-5">
-                        {weekDays.map((day) => (
-                            <div
-                                key={day}
-                                className="text-center text-xs text-muted-foreground"
-                            >
-                                {day}
-                            </div>
-                        ))}
-                    </div>
-
-                    <div className="grid gap-x-2 text-center grid-cols-7 text-xs tabular-nums">
-                        {days.map((_date) => {
-                            return (
+                        <div className="grid grid-cols-7 gap-2 my-5">
+                            {weekDays.map((day) => (
                                 <div
-                                    key={_date.toString()}
-                                    className={cn(
-                                        getMonth(_date) !== i && 'text-muted-foreground'
-                                    )}
+                                    key={day}
+                                    className="text-center text-xs text-muted-foreground"
                                 >
-                                    <div
-                                        className={cn(
-                                            'aspect-square grid place-content-center size-full tabular-nums',
-                                            isSameDay(today, _date) &&
-                                            getMonth(_date) === i &&
-                                            'bg-primary text-primary-foreground rounded-full'
-                                        )}
-                                    >
-                                        {format(_date, 'd')}
-                                    </div>
+                                    {day}
                                 </div>
-                            );
-                        })}
+                            ))}
+                        </div>
+
+                        <div className="grid gap-x-2 text-center grid-cols-7 text-xs tabular-nums">
+                            {days.map((_date) => {
+                                return (
+                                    <ContextMenu>
+                                        <ContextMenuTrigger>
+                                            <div
+                                                key={_date.toString()}
+                                                className={cn(
+                                                    getMonth(_date) !== i && 'text-muted-foreground'
+                                                )}
+                                            >
+                                                <div
+                                                    className={cn(
+                                                        'aspect-square grid place-content-center size-full tabular-nums cursor-pointer',
+                                                        isSameDay(today, _date) &&
+                                                        getMonth(_date) === i &&
+                                                        'bg-primary text-primary-foreground rounded-full'
+                                                    )}
+
+                                                    onClick={() => {
+                                                        setView('day');
+                                                        setDate(_date);
+                                                    }}
+                                                >
+                                                    {format(_date, 'd')}
+                                                </div>
+                                            </div>
+                                        </ContextMenuTrigger>
+                                        <ContextMenuContent>
+                                            <ContextMenuLabel>
+                                                {format(_date, 'EEEE, dd/MM', { locale })}
+                                            </ContextMenuLabel>
+                                            <ContextMenuSeparator />
+                                            <ContextMenuItem onClick={() => {
+                                                setSelectedDate(_date);
+                                                setCreateOpen(true);
+                                            }}>
+                                                {t('add_event')}
+                                            </ContextMenuItem>
+                                            <ContextMenuItem onClick={() => console.log('Remove event')}>
+                                                {t('remove_event')}
+                                            </ContextMenuItem>
+                                        </ContextMenuContent>
+                                    </ContextMenu>
+                                );
+                            })}
+                        </div>
                     </div>
-                </div>
-            ))}
-        </div>
+                ))
+                }
+            </div>
+
+            <AddEventModal isOpen={createOpen} onOpenChange={setCreateOpen} date={selectedDate || undefined} />
+        </>
+
     );
 };
 
@@ -625,7 +741,7 @@ const TimeTable = () => {
                     >
                         {now.getHours() === hour && (
                             <div
-                                className="absolute z- left-full translate-x-2 w-dvw h-[2px] bg-red-500"
+                                className="absolute z- left-full translate-x-2 w-dvw h-[2px] bg-red-500 pointer-events-none"
                                 style={{
                                     top: `${(now.getMinutes() / 60) * 100}%`,
                                 }}

@@ -20,5 +20,13 @@
     "update": "Aggiorna",
     "close": "Chiudi",
     "open": "Apri",
-    "confirm": "Conferma"
+    "confirm": "Conferma",
+    "add_event": "Aggiungi un evento",
+    "remove_event": "Rimuovi l'evento",
+    "title": "Titolo",
+    "description": "Descrizione",
+    "duration": "Durata",
+    "color": "Colore",
+    "start": "Inizio",
+    "end": "Fine"
 }

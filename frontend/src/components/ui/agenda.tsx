@@ -2,13 +2,14 @@ import { Calendar, CalendarCurrentDate, CalendarDayView, CalendarEvent, Calendar
 import { ChevronLeft, ChevronRight } from "lucide-react";
 import { useTranslation } from 'react-i18next';
 import { Locale } from 'date-fns';
+import { AddEventModal } from "./add-event";
 
 export default function Agenda({ lng, events = [] }: { lng: Locale, events: CalendarEvent[] }) {
     const { t } = useTranslation();
 
     return (
         <Calendar locale={lng} events={events}>
-            <div className="h-dvh w-full py-6 flex flex-col">
+            <div className="h-9/10 w-full py-6 flex flex-col">
                 <div className="flex px-6 items-center gap-2 mb-6">
                     <div className="hidden sm:flex gap-2">
                         <CalendarViewTrigger className="aria-[current=true]:bg-accent" view="day">
