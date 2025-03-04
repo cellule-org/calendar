@@ -15,6 +15,10 @@ This project is a "template" designed to provide a starting point for new softwa
 3. **Customize Configuration**: Update configuration files to match your project's requirements.
 4. **Start Development**: Begin adding your own code and features to the project.
 
+## TODO
+
+- **Mobile Development**: Work on the mobile part of the project to ensure compatibility and functionality across mobile devices.
+
 ## Contributing
 
 If you would like to contribute to this template, please follow the standard GitHub workflow:
