@@ -1,0 +1,9 @@
+{
+    "day": "Day",
+    "week": "Week",
+    "month": "Month",
+    "year": "Year",
+    "today": "Today",
+    "previous": "Previous",
+    "next": "Next"
+}

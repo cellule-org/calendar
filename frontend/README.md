@@ -60,6 +60,12 @@ frontend/
 └── vite.config.ts
 ```
 
+## Additional Resources
+
+This project uses the following resources created by individuals:
+
+* [Full Calendar for Shadcn UI](https://github.com/dninomiya/full-calendar-for-shadcn-ui) - Used as a base for the calendar, with modifications.
+
 ## License
 
 This project is currently licensed under the MIT License but may change in the future.
