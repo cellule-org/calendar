@@ -35,6 +35,16 @@ import {
 } from 'react';
 import { useHotkeys } from 'react-hotkeys-hook';
 
+import {
+    Select,
+    SelectContent,
+    SelectGroup,
+    SelectItem,
+    SelectTrigger,
+    SelectValue,
+} from "@/components/ui/select"
+import { useTranslation } from 'react-i18next';
+
 const monthEventVariants = cva('size-2 rounded-full', {
     variants: {
         variant: {
@@ -184,6 +194,32 @@ const CalendarViewTrigger = forwardRef<
     );
 });
 CalendarViewTrigger.displayName = 'CalendarViewTrigger';
+
+const CalendarViewSelector = () => {
+    const { view, setView, onChangeView } = useCalendar();
+    const { t } = useTranslation();
+
+
+    return (
+        <Select onValueChange={(value) => {
+            setView(value as View);
+            onChangeView?.(value as View);
+        }} defaultValue={view}>
+            <SelectTrigger>
+                <SelectValue>{t(view)}</SelectValue>
+            </SelectTrigger>
+            <SelectContent>
+                <SelectGroup>
+                    <SelectItem value="day">{t('day')}</SelectItem>
+                    <SelectItem value="week">{t('week')}</SelectItem>
+                    <SelectItem value="month">{t('month')}</SelectItem>
+                    <SelectItem value="year">{t('year')}</SelectItem>
+                </SelectGroup>
+            </SelectContent>
+        </Select>
+    );
+}
+CalendarViewSelector.displayName = 'CalendarViewSelector';
 
 const EventGroup = ({
     events,
@@ -642,6 +678,7 @@ export {
     CalendarPrevTrigger,
     CalendarTodayTrigger,
     CalendarViewTrigger,
+    CalendarViewSelector,
     CalendarWeekView,
     CalendarYearView,
 };
