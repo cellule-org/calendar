@@ -28,5 +28,9 @@
     "duration": "Duración",
     "color": "Color",
     "start": "Inicio",
-    "end": "Fin"
+    "end": "Fin",
+    "confirm_delete": "Eliminar un evento es irreversible",
+    "hours": "Horas",
+    "minutes": "Minutos",
+    "pick_date_time": "Elija una fecha y hora"
 }

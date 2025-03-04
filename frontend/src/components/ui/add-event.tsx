@@ -20,6 +20,7 @@ import { format } from 'date-fns';
 
 import { useTranslation } from 'react-i18next';
 import { useWebSocketContext } from '@/lib/websocket-context';
+import { DateTimePicker } from './date-time';
 
 interface AddEventModalProps {
     isOpen: boolean;
@@ -38,8 +39,8 @@ export const AddEventModal: React.FC<AddEventModalProps> = ({
 
     const [title, setTitle] = useState('');
     const [description, setDescription] = useState('');
-    const [start, setStart] = useState(format(date, 'HH:mm'));
-    const [end, setEnd] = useState(endDate ? format(endDate, 'HH:mm') : format(new Date(date.getTime() + 60 * 60 * 1000), 'HH:mm'));
+    const [start, setStart] = useState<Date | undefined>(date);
+    const [end, setEnd] = useState<Date | undefined>(endDate || new Date(date.getTime() + 60 * 60 * 1000));
 
     const possibleColors = ["default", "red", "orange", "yellow", "green", "teal", "cyan", "blue", "indigo", "purple", "pink"]
     const [color, setColor] = useState('default');
@@ -58,6 +59,26 @@ export const AddEventModal: React.FC<AddEventModalProps> = ({
                 color,
             },
         });
+    };
+
+    // Fonction helper pour générer les classes de couleur
+    const getBorderColorClass = (currentColor: string, selectedColor: string) => {
+        if (currentColor !== selectedColor) return 'border-gray-300';
+
+        switch (selectedColor) {
+            case 'default': return 'border-gray-700';
+            case 'red': return 'border-red-700';
+            case 'orange': return 'border-orange-700';
+            case 'yellow': return 'border-yellow-700';
+            case 'green': return 'border-green-700';
+            case 'teal': return 'border-teal-700';
+            case 'cyan': return 'border-cyan-700';
+            case 'blue': return 'border-blue-700';
+            case 'indigo': return 'border-indigo-700';
+            case 'purple': return 'border-purple-700';
+            case 'pink': return 'border-pink-700';
+            default: return 'border-gray-300';
+        }
     };
 
     return (
@@ -88,13 +109,13 @@ export const AddEventModal: React.FC<AddEventModalProps> = ({
                         <Label htmlFor="start" >
                             {t('start')}
                         </Label>
-                        <Input type='datetime' id='start' value={start} onChange={(e) => setStart(e.target.value)} />
+                        <DateTimePicker locale={locale} date={start} setDate={setStart} />
                     </div>
                     <div className="flex flex-col gap-2">
                         <Label htmlFor="end" >
                             {t('end')}
                         </Label>
-                        <Input type='datetime' id='end' value={end} onChange={(e) => setEnd(e.target.value)} />
+                        <DateTimePicker locale={locale} date={end} setDate={setEnd} />
                     </div>
                     <div className="flex flex-col gap-2">
                         <Label>
@@ -105,7 +126,7 @@ export const AddEventModal: React.FC<AddEventModalProps> = ({
                                 <button
                                     key={c}
                                     onClick={() => setColor(c)}
-                                    className={`rounded-full h-6 w-6 bg-${c}-500 border-2 border-gray-300 focus:outline-none ${color === c ? `border-${c}-700` : ''}`}
+                                    className={`rounded-full h-6 w-6 bg-${c}-500 border-2 focus:outline-none ${getBorderColorClass(color, c)}`}
                                 />
                             ))}
                         </div>

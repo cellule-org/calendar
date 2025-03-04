@@ -56,6 +56,7 @@ import {
 
 import { useTranslation } from 'react-i18next';
 import { AddEventModal } from './add-event';
+import { RemoveEventModal } from './remove-event';
 
 const monthEventVariants = cva('size-2 rounded-full', {
     variants: {
@@ -81,17 +82,17 @@ const monthEventVariants = cva('size-2 rounded-full', {
 const dayEventVariants = cva('font-bold border-l-4 rounded p-2 text-xs', {
     variants: {
         variant: {
-            default: 'bg-muted/30 text-muted-foreground border-muted',
-            blue: 'bg-blue-500/30 text-blue-600 border-blue-500',
-            green: 'bg-green-500/30 text-green-600 border-green-500',
-            pink: 'bg-pink-500/30 text-pink-600 border-pink-500',
-            purple: 'bg-purple-500/30 text-purple-600 border-purple-500',
-            red: 'bg-red-500/30 text-red-600 border-red-500',
-            yellow: 'bg-yellow-500/30 text-yellow-600 border-yellow-500',
-            teal: 'bg-teal-500/30 text-teal-600 border-teal-500',
-            cyan: 'bg-cyan-500/30 text-cyan-600 border-cyan-500',
-            orange: 'bg-orange-500/30 text-orange-600 border-orange-500',
-            indigo: 'bg-indigo-500/30 text-indigo-600 border-indigo-500',
+            default: 'bg-muted/45 text-muted-foreground border-muted',
+            blue: 'bg-blue-500/45 text-blue-600 border-blue-500',
+            green: 'bg-green-500/45 text-green-600 border-green-500',
+            pink: 'bg-pink-500/45 text-pink-600 border-pink-500',
+            purple: 'bg-purple-500/45 text-purple-600 border-purple-500',
+            red: 'bg-red-500/45 text-red-600 border-red-500',
+            yellow: 'bg-yellow-500/45 text-yellow-600 border-yellow-500',
+            teal: 'bg-teal-500/45 text-teal-600 border-teal-500',
+            cyan: 'bg-cyan-500/45 text-cyan-600 border-cyan-500',
+            orange: 'bg-orange-500/45 text-orange-600 border-orange-500',
+            indigo: 'bg-indigo-500/45 text-indigo-600 border-indigo-500',
         },
     },
     defaultVariants: {
@@ -122,6 +123,7 @@ export type CalendarEvent = {
     start: Date;
     end: Date;
     title: string;
+    description: string;
     color?: VariantProps<typeof monthEventVariants>['variant'];
 };
 
@@ -259,6 +261,9 @@ const EventGroup = ({
     const [createOpen, setCreateOpen] = useState(false);
     const [selectedDate, setSelectedDate] = useState<Date | null>(null);
 
+    const [removeOpen, setRemoveOpen] = useState(false);
+    const [selectedEvent, setSelectedEvent] = useState<CalendarEvent | null>(null);
+
     const { locale } = useCalendar();
     const { t } = useTranslation();
 
@@ -266,7 +271,7 @@ const EventGroup = ({
         <>
             <ContextMenu>
                 <ContextMenuTrigger>
-                    <div className="h-20 border-t last:border-b">
+                    <div className="h-20 border-t last:border-b relative">
                         {events
                             .filter((event) => isSameHour(event.start, hour))
                             .map((event) => {
@@ -275,19 +280,53 @@ const EventGroup = ({
                                 const startPosition = event.start.getMinutes() / 60;
 
                                 return (
-                                    <div
-                                        key={event.id}
-                                        className={cn(
-                                            'relative',
-                                            dayEventVariants({ variant: event.color })
-                                        )}
-                                        style={{
-                                            top: `${startPosition * 100}%`,
-                                            height: `${hoursDifference * 100}%`,
-                                        }}
-                                    >
-                                        {event.title}
-                                    </div>
+                                    <ContextMenu>
+                                        <ContextMenuTrigger asChild>
+                                            <div
+                                                key={event.id}
+                                                className={cn(
+                                                    'relative z-10',
+                                                    dayEventVariants({ variant: event.color })
+                                                )}
+                                                style={{
+                                                    top: `${startPosition * 100}%`,
+                                                    height: `${hoursDifference * 102}%`,
+                                                }}
+                                                onContextMenu={(e) => e.stopPropagation()} // Prevent context menu on event
+                                            >
+                                                <section className="flex items-center gap-2">
+                                                    {event.title}
+                                                    <p className="text-xs text-muted-foreground">
+                                                        {format(event.start, 'HH:mm')} -{' '}
+                                                        {format(event.end, 'HH:mm')}
+                                                    </p>
+                                                </section>
+                                                <p className="text-xs text-muted-foreground mt-1">
+                                                    {event.description}
+                                                </p>
+                                            </div>
+                                        </ContextMenuTrigger>
+                                        <ContextMenuContent>
+                                            <ContextMenuLabel>{format(hour, 'EEEE, dd/MM HH:mm', { locale })}</ContextMenuLabel>
+                                            <ContextMenuSeparator />
+                                            <ContextMenuItem
+                                                onClick={() => {
+                                                    setSelectedDate(hour);
+                                                    setCreateOpen(true);
+                                                }}
+                                            >
+                                                {t('add_event')}
+                                            </ContextMenuItem>
+                                            <ContextMenuItem
+                                                onClick={() => {
+                                                    setSelectedEvent(event);
+                                                    setRemoveOpen(true);
+                                                }}
+                                            >
+                                                {t('remove_event')}
+                                            </ContextMenuItem>
+                                        </ContextMenuContent>
+                                    </ContextMenu>
                                 );
                             })}
                     </div>
@@ -303,14 +342,10 @@ const EventGroup = ({
                     >
                         {t('add_event')}
                     </ContextMenuItem>
-                    <ContextMenuItem
-                        onClick={() => console.log('Remove event')}
-                    >
-                        {t('remove_event')}
-                    </ContextMenuItem>
                 </ContextMenuContent>
             </ContextMenu>
             <AddEventModal isOpen={createOpen} onOpenChange={setCreateOpen} date={selectedDate || undefined} />
+            <RemoveEventModal isOpen={removeOpen} onOpenChange={setRemoveOpen} event={selectedEvent} />
         </>
     );
 };
@@ -505,9 +540,6 @@ const CalendarMonthView = () => {
                                     }}>
                                         {t('add_event')}
                                     </ContextMenuItem>
-                                    <ContextMenuItem onClick={() => console.log('Remove event')}>
-                                        {t('remove_event')}
-                                    </ContextMenuItem>
                                 </ContextMenuContent>
                             </ContextMenu>
                         );
@@ -596,9 +628,6 @@ const CalendarYearView = () => {
                                                 setCreateOpen(true);
                                             }}>
                                                 {t('add_event')}
-                                            </ContextMenuItem>
-                                            <ContextMenuItem onClick={() => console.log('Remove event')}>
-                                                {t('remove_event')}
                                             </ContextMenuItem>
                                         </ContextMenuContent>
                                     </ContextMenu>

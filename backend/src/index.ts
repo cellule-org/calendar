@@ -75,6 +75,62 @@ const createWebSocket = () => {
     return wss;
 }
 
+const handleAddEvent = async (ws: WebSocket, data: any) => {
+    const { title, description, start, end, color } = data;
+
+    const startDateTime = new Date(start);
+    const endDateTime = new Date(end);
+
+    const created_event = await prisma.event.create({
+        data: {
+            title,
+            description,
+            start: startDateTime,
+            end: endDateTime,
+            color
+        }
+    });
+
+    if (!calendar_ws) { // Can't happen, but TypeScript doesn't know that
+        return;
+    }
+
+    calendar_ws.clients.forEach(client => {
+        if (client.readyState === WebSocket.OPEN) {
+            client.send(JSON.stringify({
+                type: 'event_added',
+                event: created_event
+            }));
+        }
+    });
+};
+
+const handleRemoveEvent = async (ws: WebSocket, data: any) => {
+    const { id } = data;
+
+    await prisma.event.delete({
+        where: { id }
+    });
+
+    ws.send(JSON.stringify({
+        type: 'event_removed',
+        events: await prisma.event.findMany()
+    }));
+
+    if (!calendar_ws) { // Can't happen, but TypeScript doesn't know that
+        return;
+    }
+
+    calendar_ws.clients.forEach(client => {
+        if (client.readyState === WebSocket.OPEN) {
+            client.send(JSON.stringify({
+                type: 'event_removed',
+                id
+            }));
+        }
+    });
+};
+
 const start = async () => {
     try {
         calendar_ws = createWebSocket() as WebSocketServer;
@@ -87,52 +143,15 @@ const start = async () => {
 
             ws.on('message', async (message) => {
                 const parsedMessage = JSON.parse(message.toString());
-                if (parsedMessage.type === 'add_event') {
-                    const { title, description, start, end, color, date } = parsedMessage.data;
-                    const [startHour, startMinute] = start.split(':').map(Number);
-                    const [endHour, endMinute] = end.split(':').map(Number);
-                    const eventDate = new Date(date);
-
-                    const startDateTime = new Date(eventDate);
-                    startDateTime.setHours(startHour, startMinute);
-
-                    const endDateTime = new Date(eventDate);
-                    endDateTime.setHours(endHour, endMinute);
-
-                    await prisma.event.create({
-                        data: {
-                            title,
-                            description,
-                            start: startDateTime,
-                            end: endDateTime,
-                            color
-                        }
-                    });
-
-                    ws.send(JSON.stringify({
-                        type: 'event_added',
-                        events: await prisma.event.findMany()
-                    }));
-
-                    if (!calendar_ws) { // Can't happen, but TypeScript doesn't know that
-                        return;
-                    }
-
-                    calendar_ws.clients.forEach(client => {
-                        if (client.readyState === WebSocket.OPEN) {
-                            client.send(JSON.stringify({
-                                type: 'event_added',
-                                event: {
-                                    title,
-                                    description,
-                                    start,
-                                    end,
-                                    color,
-                                    date
-                                }
-                            }));
-                        }
-                    });
+                switch (parsedMessage.type) {
+                    case 'add_event':
+                        await handleAddEvent(ws, parsedMessage.data);
+                        break;
+                    case 'remove_event':
+                        await handleRemoveEvent(ws, parsedMessage.data);
+                        break;
+                    default:
+                        console.warn(`Unknown message type: ${parsedMessage.type}`);
                 }
             });
         });
