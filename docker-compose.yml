@@ -1,22 +1,32 @@
 services:
   calendar:
     image: cellules/calendar:latest
+    container_name: calendar-app
     ports:
       - "3001:3001"
     depends_on:
       - db
     environment:
-      DATABASE_URL: postgres://postgres:password@db:5432/calendardb
-      CORE_PORT: 3000
+      DATABASE_URL: postgres://postgres:password@calendar-db:5432/calendardb
+      CORE_WS_URL: ws://core-app:3000
+    networks:
+      - cellule
 
   db:
     image: postgres:13
+    container_name: calendar-db
     environment:
       POSTGRES_USER: postgres
       POSTGRES_PASSWORD: password
       POSTGRES_DB: calendardb
     volumes:
       - postgres_data:/var/lib/postgresql/data
+    networks:
+      - cellule
 
 volumes:
   postgres_data:
+
+networks:
+  cellule:
+    external: true
