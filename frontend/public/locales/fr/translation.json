@@ -5,5 +5,20 @@
     "year": "Année",
     "today": "Aujourd'hui",
     "previous": "Précédent",
-    "next": "Suivant"
+    "next": "Suivant",
+    "calendar": "Calendrier",
+    "event": "Événement",
+    "settings": "Paramètres",
+    "language": "Langue",
+    "save": "Enregistrer",
+    "cancel": "Annuler",
+    "delete": "Supprimer",
+    "edit": "Éditer",
+    "view": "Voir",
+    "search": "Rechercher",
+    "add": "Ajouter",
+    "update": "Mettre à jour",
+    "close": "Fermer",
+    "open": "Ouvrir",
+    "confirm": "Confirmer"
 }
