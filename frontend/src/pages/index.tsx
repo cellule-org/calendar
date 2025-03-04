@@ -31,17 +31,36 @@ export default function index() {
       const customEvent = event as CustomEvent;
       const eventData = customEvent.detail.map((event: any) => ({
         ...event,
-        date: new Date(event.date),
         start: new Date(event.start),
         end: new Date(event.end),
       }));
       setEvents(eventData);
     };
 
+    const handleAddEvent = (event: Event) => {
+      const customEvent = event as CustomEvent;
+      const eventData = customEvent.detail;
+      setEvents(prevEvents => [...prevEvents, {
+        ...eventData,
+        start: new Date(eventData.start),
+        end: new Date(eventData.end),
+      }]);
+    }
+
+    const handleRemoveEvent = (event: Event) => {
+      const customEvent = event as CustomEvent;
+      const eventId = customEvent.detail;
+      setEvents(prevEvents => prevEvents.filter(event => event.id !== eventId));
+    }
+
     window.addEventListener('loadEvents', handleLoadEvents);
+    window.addEventListener('eventAdded', handleAddEvent);
+    window.addEventListener('eventRemoved', handleRemoveEvent);
 
     return () => {
       window.removeEventListener('loadEvents', handleLoadEvents);
+      window.removeEventListener('eventAdded', handleAddEvent);
+      window.removeEventListener('eventRemoved', handleRemoveEvent);
     };
   }, []);
 

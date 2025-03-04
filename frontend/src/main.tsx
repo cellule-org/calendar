@@ -24,6 +24,12 @@ const handleLoadEvents = (data: any) => {
     if (data.type === 'load_events') {
         const event = new CustomEvent('loadEvents', { detail: data.events });
         window.dispatchEvent(event);
+    } else if (data.type === 'event_added') {
+        const event = new CustomEvent('eventAdded', { detail: data.event });
+        window.dispatchEvent(event);
+    } else if (data.type === 'event_removed') {
+        const event = new CustomEvent('eventRemoved', { detail: data.id });
+        window.dispatchEvent(event);
     }
 }
 
