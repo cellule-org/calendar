@@ -112,11 +112,6 @@ const handleRemoveEvent = async (ws: WebSocket, data: any) => {
         where: { id }
     });
 
-    ws.send(JSON.stringify({
-        type: 'event_removed',
-        events: await prisma.event.findMany()
-    }));
-
     if (!calendar_ws) { // Can't happen, but TypeScript doesn't know that
         return;
     }
