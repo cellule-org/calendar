@@ -16,14 +16,24 @@ const websocketConfig = {
     autoConnect: true,
 }
 
-const handleGlobalMessage = (data: any) => {
-    console.log("Message global", data)
+const handleGlobalMessage = (_data: any) => {
+    //console.log("Message global", data)
+}
+
+const handleLoadEvents = (data: any) => {
+    if (data.type === 'load_events') {
+        const event = new CustomEvent('loadEvents', { detail: data.events });
+        window.dispatchEvent(event);
+    }
 }
 
 createRoot(document.getElementById('root')!).render(
     <WebSocketProvider
         config={websocketConfig}
-        onMessage={handleGlobalMessage}
+        onMessage={(data) => {
+            handleGlobalMessage(data);
+            handleLoadEvents(data);
+        }}
         onOpen={(event) => console.log("WebSocket connecté", event)}
         onError={(event) => console.error("Erreur WebSocket", event)}
     >

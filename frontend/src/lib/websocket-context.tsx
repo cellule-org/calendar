@@ -18,6 +18,7 @@ interface WebSocketContextType {
   connect: () => void
   disconnect: () => void
   getWebSocket: () => WebSocket | null
+  onMessage?: (data: any) => void
 }
 
 // Création du contexte avec une valeur par défaut

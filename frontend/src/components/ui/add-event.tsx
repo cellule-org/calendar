@@ -8,6 +8,7 @@ import {
     DialogFooter,
     DialogHeader,
     DialogTitle,
+    DialogClose,
 } from "@/components/ui/dialog"
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
@@ -18,6 +19,7 @@ import { useCalendar } from '@/components/ui/full-calendar';
 import { format } from 'date-fns';
 
 import { useTranslation } from 'react-i18next';
+import { useWebSocketContext } from '@/lib/websocket-context';
 
 interface AddEventModalProps {
     isOpen: boolean;
@@ -32,6 +34,8 @@ export const AddEventModal: React.FC<AddEventModalProps> = ({
     date = new Date(),
     endDate,
 }) => {
+    const { sendMessage } = useWebSocketContext();
+
     const [title, setTitle] = useState('');
     const [description, setDescription] = useState('');
     const [start, setStart] = useState(format(date, 'HH:mm'));
@@ -44,8 +48,16 @@ export const AddEventModal: React.FC<AddEventModalProps> = ({
     const { t } = useTranslation();
 
     const handleSave = () => {
-        const start = format(date, 'HH:mm');
-        console.log({ title, description, start, end, color, date });
+        sendMessage({
+            type: 'add_event',
+            data: {
+                title,
+                description,
+                start,
+                end,
+                color,
+            },
+        });
     };
 
     return (
@@ -76,13 +88,13 @@ export const AddEventModal: React.FC<AddEventModalProps> = ({
                         <Label htmlFor="start" >
                             {t('start')}
                         </Label>
-                        <Input id='start' value={start} onChange={(e) => setStart(e.target.value)} />
+                        <Input type='datetime' id='start' value={start} onChange={(e) => setStart(e.target.value)} />
                     </div>
                     <div className="flex flex-col gap-2">
                         <Label htmlFor="end" >
                             {t('end')}
                         </Label>
-                        <Input id='end' value={end} onChange={(e) => setEnd(e.target.value)} />
+                        <Input type='datetime' id='end' value={end} onChange={(e) => setEnd(e.target.value)} />
                     </div>
                     <div className="flex flex-col gap-2">
                         <Label>
@@ -100,11 +112,13 @@ export const AddEventModal: React.FC<AddEventModalProps> = ({
                     </div>
                 </div>
                 <DialogFooter>
-                    <Button
-                        onClick={handleSave}
-                    >
-                        {t('save')}
-                    </Button>
+                    <DialogClose asChild>
+                        <Button
+                            onClick={handleSave}
+                        >
+                            {t('save')}
+                        </Button>
+                    </DialogClose>
                 </DialogFooter>
             </DialogContent>
         </Dialog>

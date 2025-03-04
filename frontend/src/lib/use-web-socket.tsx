@@ -18,7 +18,6 @@ interface UseWebSocketOptions {
     protocols?: string | string[];
     autoConnect?: boolean;
 }
-
 export function useWebSocket({
     url,
     reconnectAttempts = 5,
@@ -133,5 +132,6 @@ export function useWebSocket({
         connect,
         disconnect,
         getWebSocket: () => webSocketRef.current,
+        onMessage,
     };
 }

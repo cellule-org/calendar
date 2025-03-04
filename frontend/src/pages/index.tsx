@@ -2,12 +2,14 @@ import Agenda from "@/components/ui/agenda";
 import { useTranslation } from "react-i18next";
 import * as locales from 'date-fns/locale';
 import { ModeToggle } from "@/components/ui/mode-toogle";
+import { useEffect, useState } from "react";
 
 type LocaleKey = keyof typeof locales;
 
 export default function index() {
   const { i18n } = useTranslation();
   const language = i18n.language;
+  const [events, setEvents] = useState<any[]>([]);
 
   const getLocaleFromI18n = (language: string) => {
     if (locales[language as LocaleKey]) {
@@ -24,13 +26,32 @@ export default function index() {
     return locales['enUS'];
   }
 
+  useEffect(() => {
+    const handleLoadEvents = (event: Event) => {
+      const customEvent = event as CustomEvent;
+      const eventData = customEvent.detail.map((event: any) => ({
+        ...event,
+        date: new Date(event.date),
+        start: new Date(event.start),
+        end: new Date(event.end),
+      }));
+      setEvents(eventData);
+    };
+
+    window.addEventListener('loadEvents', handleLoadEvents);
+
+    return () => {
+      window.removeEventListener('loadEvents', handleLoadEvents);
+    };
+  }, []);
+
   return (
     <section className="flex flex-col items-center justify-center h-screen">
       <section className="flex items-center justify-between w-full px-6 py-4">
         <h1 className="text-2xl font-bold text-primary">Calendar</h1>
         <ModeToggle />
       </section>
-      <Agenda lng={getLocaleFromI18n(language)} events={[]} />
+      <Agenda lng={getLocaleFromI18n(language)} events={events} />
     </section>
   )
 }

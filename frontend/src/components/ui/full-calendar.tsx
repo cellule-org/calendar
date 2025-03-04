@@ -32,6 +32,7 @@ import {
     useContext,
     useMemo,
     useState,
+    useEffect,
 } from 'react';
 import { useHotkeys } from 'react-hotkeys-hook';
 
@@ -148,6 +149,10 @@ const Calendar = ({
     const [view, setView] = useState<View>(_defaultMode);
     const [date, setDate] = useState(defaultDate);
     const [events, setEvents] = useState<CalendarEvent[]>(defaultEvents);
+
+    useEffect(() => {
+        setEvents(defaultEvents);
+    }, [defaultEvents]);
 
     const changeView = (view: View) => {
         setView(view);
@@ -416,6 +421,7 @@ const CalendarMonthView = () => {
     const [selectedDate, setSelectedDate] = useState<Date | null>(null);
 
     const { date, view, events, locale, setView, setDate } = useCalendar();
+
     const { t } = useTranslation();
 
     const monthDates = useMemo(() => getDaysInMonth(date), [date]);
