@@ -2,7 +2,6 @@ import { Calendar, CalendarCurrentDate, CalendarDayView, CalendarEvent, Calendar
 import { ChevronLeft, ChevronRight } from "lucide-react";
 import { useTranslation } from 'react-i18next';
 import { Locale } from 'date-fns';
-import { AddEventModal } from "./add-event";
 
 export default function Agenda({ lng, events = [] }: { lng: Locale, events: CalendarEvent[] }) {
     const { t } = useTranslation();
