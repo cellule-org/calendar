@@ -1,19 +1,20 @@
 services:
-  core:
-    image: cellules/core:latest
+  calendar:
+    image: cellules/calendar:latest
     ports:
-      - "3002:3001"
+      - "3001:3001"
     depends_on:
       - db
     environment:
-      DATABASE_URL: postgres://postgres:password@db:5432/coredb
+      DATABASE_URL: postgres://postgres:password@db:5432/calendardb
+      CORE_PORT: 3000
 
   db:
     image: postgres:13
     environment:
       POSTGRES_USER: postgres
       POSTGRES_PASSWORD: password
-      POSTGRES_DB: coredb
+      POSTGRES_DB: calendardb
     volumes:
       - postgres_data:/var/lib/postgresql/data
 
