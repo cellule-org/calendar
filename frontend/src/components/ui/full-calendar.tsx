@@ -544,7 +544,7 @@ const CalendarMonthView = () => {
                                     <ContextMenuLabel>{format(_date, 'EEEE, dd/MM', { locale })}</ContextMenuLabel>
                                     <ContextMenuSeparator />
                                     <ContextMenuItem onClick={() => {
-                                        setSelectedDate(setHours(_date, 12));
+                                        setSelectedDate(setHours(new Date(_date), 12));
                                         setCreateOpen(true);
                                     }}>
                                         {t('add_event')}

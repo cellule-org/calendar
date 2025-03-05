@@ -45,14 +45,14 @@ export const AddEventModal: React.FC<AddEventModalProps> = ({
     const [end, setEnd] = useState<Date>(_end || new Date(_start.getTime() + 60 * 60 * 1000));
 
     useEffect(() => {
-        if (start.getHours() !== _start.getHours()) {
+        if (start.getHours() !== _start.getHours() || start.getDate() !== _start.getDate()) {
             setStart(_start);
             setEnd(new Date(_start.getTime() + 60 * 60 * 1000));
         }
     }, [_start, start]);
 
     useEffect(() => {
-        if (_end && end.getHours() !== _end.getHours()) {
+        if (_end && (end.getHours() !== _end.getHours() || end.getDate() !== _end.getDate())) {
             setEnd(_end);
         }
     }, [_end, end]);
