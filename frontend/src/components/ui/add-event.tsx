@@ -11,16 +11,13 @@ import {
     DialogClose,
 } from "@/components/ui/dialog"
 import { Button } from '@/components/ui/button';
-import { Input } from '@/components/ui/input';
-import { Textarea } from '@/components/ui/textarea';
-import { Label } from '@/components/ui/label';
 import { useCalendar } from '@/components/ui/full-calendar';
 
 import { format } from 'date-fns';
 
 import { useTranslation } from 'react-i18next';
 import { useWebSocketContext } from '@/lib/websocket-context';
-import { DateTimePicker } from './date-time';
+import { EventForm } from './event-form';
 
 interface AddEventModalProps {
     isOpen: boolean;
@@ -43,6 +40,7 @@ export const AddEventModal: React.FC<AddEventModalProps> = ({
     const [description, setDescription] = useState('');
     const [start, setStart] = useState<Date>(_start);
     const [end, setEnd] = useState<Date>(_end || new Date(_start.getTime() + 60 * 60 * 1000));
+    const [color, setColor] = useState<'default' | 'blue' | 'green' | 'pink' | 'purple' | 'red' | 'yellow' | 'teal' | 'cyan' | 'orange' | 'indigo'>('default');
 
     useEffect(() => {
         if (start.getHours() !== _start.getHours() || start.getDate() !== _start.getDate()) {
@@ -56,9 +54,6 @@ export const AddEventModal: React.FC<AddEventModalProps> = ({
             setEnd(_end);
         }
     }, [_end, end]);
-
-    const possibleColors = ["default", "red", "orange", "yellow", "green", "teal", "cyan", "blue", "indigo", "purple", "pink"]
-    const [color, setColor] = useState('default');
 
     const { locale } = useCalendar();
     const { t } = useTranslation();
@@ -76,25 +71,6 @@ export const AddEventModal: React.FC<AddEventModalProps> = ({
         });
     };
 
-    const getBorderColorClass = (currentColor: string, selectedColor: string) => {
-        if (currentColor !== selectedColor) return 'border-gray-300';
-
-        switch (selectedColor) {
-            case 'default': return 'border-gray-700';
-            case 'red': return 'border-red-700';
-            case 'orange': return 'border-orange-700';
-            case 'yellow': return 'border-yellow-700';
-            case 'green': return 'border-green-700';
-            case 'teal': return 'border-teal-700';
-            case 'cyan': return 'border-cyan-700';
-            case 'blue': return 'border-blue-700';
-            case 'indigo': return 'border-indigo-700';
-            case 'purple': return 'border-purple-700';
-            case 'pink': return 'border-pink-700';
-            default: return 'border-gray-300';
-        }
-    };
-
     return (
         <Dialog open={isOpen} onOpenChange={onOpenChange}>
             <DialogTrigger className={children ? '' : 'hidden'} asChild>
@@ -107,51 +83,21 @@ export const AddEventModal: React.FC<AddEventModalProps> = ({
                         {format(_start, 'PP', { locale })}
                     </DialogDescription>
                 </DialogHeader>
-                <div className="flex flex-col gap-8">
-                    <div className="flex flex-col gap-2">
-                        <Label htmlFor="title" >
-                            {t('title')}
-                        </Label>
-                        <Input id='title' value={title} onChange={(e) => setTitle(e.target.value)} />
-                    </div>
-                    <div className="flex flex-col gap-2">
-                        <Label htmlFor="description" >
-                            {t('description')}
-                        </Label>
-                        <Textarea value={description} onChange={(e) => setDescription(e.target.value)} />
-                    </div>
-                    <div className="flex flex-col gap-2">
-                        <Label htmlFor="start" >
-                            {t('start')}
-                        </Label>
-                        <DateTimePicker locale={locale} date={start} setDate={setStart} />
-                    </div>
-                    <div className="flex flex-col gap-2">
-                        <Label htmlFor="end" >
-                            {t('end')}
-                        </Label>
-                        <DateTimePicker locale={locale} date={end} setDate={setEnd} />
-                    </div>
-                    <div className="flex flex-col gap-2">
-                        <Label>
-                            {t('color')}
-                        </Label>
-                        <div className="flex gap-2">
-                            {possibleColors.map((c) => (
-                                <button
-                                    key={c}
-                                    onClick={() => setColor(c)}
-                                    className={`rounded-full h-6 w-6 bg-${c}-500 border-2 focus:outline-none ${getBorderColorClass(color, c)}`}
-                                />
-                            ))}
-                        </div>
-                    </div>
-                </div>
+                <EventForm
+                    title={title}
+                    setTitle={setTitle}
+                    description={description}
+                    setDescription={setDescription}
+                    start={start}
+                    setStart={setStart}
+                    end={end}
+                    setEnd={setEnd}
+                    color={color}
+                    setColor={setColor}
+                />
                 <DialogFooter>
                     <DialogClose asChild>
-                        <Button
-                            onClick={handleSave}
-                        >
+                        <Button onClick={handleSave}>
                             {t('save')}
                         </Button>
                     </DialogClose>
