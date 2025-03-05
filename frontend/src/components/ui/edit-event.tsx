@@ -63,6 +63,7 @@ export const EditEventModal: React.FC<EditEventModalProps> = ({
         sendMessage({
             type: 'edit_event',
             data: {
+                id: event?.id,
                 title,
                 description,
                 start,

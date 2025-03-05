@@ -52,6 +52,23 @@ export default function index() {
       }]);
     }
 
+    const handleEditEvent = (event: Event) => {
+      const customEvent = event as CustomEvent;
+      const eventData = customEvent.detail;
+      setEvents(prevEvents => prevEvents.map(event => {
+        if (event.id === eventData.id) {
+          return {
+            ...event,
+            ...eventData,
+            start: new Date(eventData.start),
+            end: new Date(eventData.end),
+          };
+        }
+
+        return event;
+      }));
+    }
+
     const handleRemoveEvent = (event: Event) => {
       const customEvent = event as CustomEvent;
       const eventId = customEvent.detail;
@@ -60,11 +77,13 @@ export default function index() {
 
     window.addEventListener('loadEvents', handleLoadEvents);
     window.addEventListener('eventAdded', handleAddEvent);
+    window.addEventListener('eventEdited', handleEditEvent);
     window.addEventListener('eventRemoved', handleRemoveEvent);
 
     return () => {
       window.removeEventListener('loadEvents', handleLoadEvents);
       window.removeEventListener('eventAdded', handleAddEvent);
+      window.removeEventListener('eventEdited', handleEditEvent);
       window.removeEventListener('eventRemoved', handleRemoveEvent);
     };
   }, []);

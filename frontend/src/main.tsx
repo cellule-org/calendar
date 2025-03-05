@@ -27,6 +27,9 @@ const handleLoadEvents = (data: any) => {
     } else if (data.type === 'event_added') {
         const event = new CustomEvent('eventAdded', { detail: data.event });
         window.dispatchEvent(event);
+    } else if (data.type === 'event_edited') {
+        const event = new CustomEvent('eventEdited', { detail: data.event });
+        window.dispatchEvent(event);
     } else if (data.type === 'event_removed') {
         const event = new CustomEvent('eventRemoved', { detail: data.id });
         window.dispatchEvent(event);

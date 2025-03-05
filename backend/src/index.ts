@@ -131,6 +131,68 @@ const handleAddEvent = async (core_ws: WebSocket, ws: WebSocket, data: any) => {
     }));
 };
 
+const handleEditEvent = async (core_ws: WebSocket, ws: WebSocket, data: any) => {
+    const { id, title, description, start, end, color } = data;
+
+    if (!id) {
+        ws.send(JSON.stringify({
+            type: 'message',
+            success: false,
+            message: 'Event ID is required'
+        }));
+        return;
+    }
+
+    const startDateTime = new Date(start);
+    const endDateTime = new Date(end);
+
+    await prisma.event.update({
+        where: { id },
+        data: {
+            title,
+            description,
+            start: startDateTime,
+            end: endDateTime,
+            color
+        }
+    });
+
+    if (!calendar_ws) { // Can't happen, but TypeScript doesn't know that
+        return;
+    }
+
+    calendar_ws.clients.forEach(client => {
+        if (client.readyState === WebSocket.OPEN) {
+            client.send(JSON.stringify({
+                type: 'event_edited',
+                event: {
+                    id,
+                    title,
+                    description,
+                    start: startDateTime,
+                    end: endDateTime,
+                    color
+                }
+            }));
+        }
+    });
+
+    core_ws.send(JSON.stringify({
+        type: 'submit',
+        data: {
+            id: 'edit_calendar_event',
+            data: {
+                id,
+                title,
+                description,
+                start: startDateTime,
+                end: endDateTime,
+                color
+            }
+        }
+    }));
+}
+
 const handleRemoveEvent = async (core_ws: WebSocket, ws: WebSocket, data: any) => {
     const { id } = data;
 
@@ -185,6 +247,9 @@ const start = async () => {
                     case 'add_event':
                         await handleAddEvent(core_ws, ws, parsedMessage.data);
                         break;
+                    case 'edit_event':
+                        await handleEditEvent(core_ws, ws, parsedMessage.data);
+                        break;
                     case 'remove_event':
                         await handleRemoveEvent(core_ws, ws, parsedMessage.data);
                         break;
@@ -199,6 +264,15 @@ const start = async () => {
             data: {
                 id: "new_calendar_event",
                 name: "New Calendar Event",
+                public: false
+            }
+        }));
+
+        core_ws.send(JSON.stringify({
+            type: "create",
+            data: {
+                id: "edit_calendar_event",
+                name: "Edit Calendar Event",
                 public: false
             }
         }));
