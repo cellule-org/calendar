@@ -2,8 +2,13 @@ import { Calendar, CalendarCurrentDate, CalendarDayView, CalendarEvent, Calendar
 import { ChevronLeft, ChevronRight } from "lucide-react";
 import { useTranslation } from 'react-i18next';
 import { Locale } from 'date-fns';
+import { AddEventModal } from "./add-event"; import { Button } from "./button";
+import { useState } from "react";
+;
 
 export default function Agenda({ lng, events = [] }: { lng: Locale, events: CalendarEvent[] }) {
+    const [isOpen, setOpen] = useState(false);
+
     const { t } = useTranslation();
 
     return (
@@ -39,6 +44,14 @@ export default function Agenda({ lng, events = [] }: { lng: Locale, events: Cale
 
                     <span className="flex-1" />
 
+                    <AddEventModal isOpen={isOpen} onOpenChange={setOpen}>
+                        <Button
+                            size={"icon"}
+                            className="w-fit h-9 px-4 py-2"
+                        >
+                            {t('add_event')}
+                        </Button>
+                    </AddEventModal>
                     <CalendarCurrentDate />
 
                     <CalendarPrevTrigger>

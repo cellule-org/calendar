@@ -27,6 +27,7 @@ interface AddEventModalProps {
     onOpenChange: (isOpen: boolean) => void;
     date?: Date;
     endDate?: Date;
+    children?: React.ReactNode;
 }
 
 export const AddEventModal: React.FC<AddEventModalProps> = ({
@@ -34,6 +35,7 @@ export const AddEventModal: React.FC<AddEventModalProps> = ({
     onOpenChange,
     date = new Date(),
     endDate,
+    children,
 }) => {
     const { sendMessage } = useWebSocketContext();
 
@@ -82,7 +84,8 @@ export const AddEventModal: React.FC<AddEventModalProps> = ({
 
     return (
         <Dialog open={isOpen} onOpenChange={onOpenChange}>
-            <DialogTrigger className='hidden'>Add Event
+            <DialogTrigger className={children ? '' : 'hidden'} asChild>
+                {children}
             </DialogTrigger>
             <DialogContent>
                 <DialogHeader>
