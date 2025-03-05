@@ -758,7 +758,7 @@ const CalendarCurrentDate = () => {
 
     return (
         <time dateTime={date.toISOString()} className="tabular-nums">
-            {format(date, view === 'day' ? 'EEEE, dd MMMM yyyy' : 'MMMM yyyy', { locale })}
+            {format(date, view === 'year' ? 'yyyy' : view === 'day' ? 'EEEE, dd MMMM yyyy' : 'MMMM yyyy', { locale })}
         </time>
     );
 };
