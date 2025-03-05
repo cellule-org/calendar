@@ -16,6 +16,11 @@ export default function index() {
       return locales[language as LocaleKey];
     }
 
+    const secondaryLanguage = language.split('-').join('');
+    if (locales[secondaryLanguage as LocaleKey]) {
+      return locales[secondaryLanguage as LocaleKey];
+    }
+
     const mainKey = language.split('-')[0];
     if (locales[mainKey as LocaleKey]) {
       return locales[mainKey as LocaleKey];
