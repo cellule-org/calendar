@@ -428,7 +428,7 @@ const CalendarWeekView = () => {
 
     return (
         <div className="flex flex-col relative overflow-hidden overflow-y-auto h-full">
-            <div className="flex sticky top-0 bg-card z-10 border-b mb-3">
+            <div className="flex sticky top-0 bg-card z-20 border-b mb-3">
                 <div className="w-12"></div>
                 {headerDays.map((date, i) => (
                     <div
@@ -657,6 +657,7 @@ const CalendarYearView = () => {
                                                             key={event.id}
                                                             className={cn(
                                                                 '!size-1 rounded-full',
+                                                                getMonth(_date) !== i && 'hidden',
                                                                 monthEventVariants({ variant: event.color })
                                                             )}
                                                         ></div>
