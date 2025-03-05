@@ -57,6 +57,7 @@ import {
 import { useTranslation } from 'react-i18next';
 import { AddEventModal } from './add-event';
 import { RemoveEventModal } from './remove-event';
+import { EditEventModal } from './edit-event';
 
 const monthEventVariants = cva('size-2 rounded-full', {
     variants: {
@@ -259,7 +260,6 @@ const clearMinutes = (date: Date) => {
     console.log(newDate);
     return newDate;
 }
-
 const EventGroup = ({
     events,
     hour,
@@ -269,6 +269,8 @@ const EventGroup = ({
 }) => {
     const [createOpen, setCreateOpen] = useState(false);
     const [selectedDate, setSelectedDate] = useState<Date | null>(null);
+
+    const [editOpen, setEditOpen] = useState(false);
 
     const [removeOpen, setRemoveOpen] = useState(false);
     const [selectedEvent, setSelectedEvent] = useState<CalendarEvent | null>(null);
@@ -280,7 +282,13 @@ const EventGroup = ({
         <>
             <ContextMenu>
                 <ContextMenuTrigger>
-                    <div className="h-20 border-t last:border-b relative">
+                    <div
+                        className="h-20 border-t last:border-b relative"
+                        onDoubleClick={() => {
+                            setSelectedDate(hour);
+                            setCreateOpen(true);
+                        }}
+                    >
                         {events
                             .filter((event) => isSameHour(event.start, hour))
                             .map((event) => {
@@ -289,10 +297,9 @@ const EventGroup = ({
                                 const startPosition = event.start.getMinutes() / 60;
 
                                 return (
-                                    <ContextMenu>
+                                    <ContextMenu key={event.id}>
                                         <ContextMenuTrigger asChild>
                                             <div
-                                                key={event.id}
                                                 className={cn(
                                                     'relative z-10',
                                                     dayEventVariants({ variant: event.color })
@@ -302,6 +309,11 @@ const EventGroup = ({
                                                     height: `${Math.min(hoursDifference, 24 - event.start.getHours() - startPosition) * 102}%`,
                                                 }}
                                                 onContextMenu={(e) => e.stopPropagation()} // Prevent context menu on event
+                                                onDoubleClick={(e) => {
+                                                    e.stopPropagation(); // Prevent triggering the parent double click
+                                                    setSelectedEvent(event);
+                                                    setEditOpen(true);
+                                                }}
                                             >
                                                 <section className="flex items-center gap-2">
                                                     {event.title}
@@ -325,6 +337,14 @@ const EventGroup = ({
                                                 }}
                                             >
                                                 {t('add_event')}
+                                            </ContextMenuItem>
+                                            <ContextMenuItem
+                                                onClick={() => {
+                                                    setSelectedEvent(event);
+                                                    setEditOpen(true);
+                                                }}
+                                            >
+                                                {t('edit_event')}
                                             </ContextMenuItem>
                                             <ContextMenuItem
                                                 onClick={() => {
@@ -354,6 +374,7 @@ const EventGroup = ({
                 </ContextMenuContent>
             </ContextMenu>
             <AddEventModal isOpen={createOpen} onOpenChange={setCreateOpen} start={selectedDate || undefined} />
+            <EditEventModal isOpen={editOpen} onOpenChange={setEditOpen} event={selectedEvent} />
             <RemoveEventModal isOpen={removeOpen} onOpenChange={setRemoveOpen} event={selectedEvent} />
         </>
     );

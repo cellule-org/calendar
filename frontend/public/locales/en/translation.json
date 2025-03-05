@@ -23,6 +23,7 @@
     "confirm": "Confirm",
     "add_event": "Add an event",
     "remove_event": "Remove the event",
+    "edit_event": "Edit the event",
     "title": "Title",
     "description": "Description",
     "duration": "Duration",

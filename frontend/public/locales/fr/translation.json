@@ -23,6 +23,7 @@
     "confirm": "Confirmer",
     "add_event": "Ajouter un événement",
     "remove_event": "Supprimer l'événement",
+    "edit_event": "Modifier l'événement",
     "confirm_delete": "Supprimer un événement est irréversible",
     "hours": "Heures",
     "minutes": "Minutes",
