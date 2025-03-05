@@ -8,6 +8,20 @@ This project is a "template" designed to provide a starting point for new softwa
 
 - **Full-Stack Template**: Provides a model for both frontend and backend development, including database integration.
 
+## Stack
+
+- **Frontend**: React, TypeScript, Tailwind CSS, shadcn/ui
+- **Backend**: Express, TypeScript, WebSocket
+- **Database**: Prisma, PostgreSQL (or any other supported database)
+- **Deployment**: Docker (Dockerfile and Docker Compose)
+
+## Additional Resources
+
+This project uses the following resources created by individuals:
+
+* [Full Calendar for Shadcn UI](https://github.com/dninomiya/full-calendar-for-shadcn-ui) - Used as a base for the calendar, with modifications. 
+  - I have implemented a complete translation system, a full event creation, editing, and deletion system, all in direct communication with the backend via WebSocket.
+
 ## Getting Started
 
 1. **Clone the Repository**: Start by cloning the template repository to your local machine.
@@ -18,7 +32,6 @@ This project is a "template" designed to provide a starting point for new softwa
 ## TODO
 
 - **Mobile Development**: Work on the mobile part of the project to ensure compatibility and functionality across mobile devices.
-- **Event Creation on Desktop**: Implement functionality to create an event by double-clicking on a time slot.
 - **Event Creation on Mobile**: Implement functionality to create an event by long-pressing on a time slot.
 
 ## Contributing
