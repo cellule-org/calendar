@@ -32,7 +32,14 @@ app.get("/locales/:lng/translation.json", (req: Request, res: Response) => {
 });
 
 const messageHandler = (message: string) => {
-    console.log('Received:', message);
+    const parsedMessage = JSON.parse(message);
+    switch (parsedMessage.type) {
+        case 'message':
+            console.log('Received message:', parsedMessage.data);
+            break;
+        default:
+            console.warn(`Unknown message type: ${parsedMessage.type}`);
+    }
 }
 
 const connectToWebSocketServer = async (url: string, retries: number = 50, delay: number = 3000): Promise<WebSocket> => {
