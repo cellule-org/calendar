@@ -1,4 +1,4 @@
-import React, { useState } from 'react';
+import React, { useEffect, useState } from 'react';
 
 import {
     Dialog,
@@ -25,24 +25,37 @@ import { DateTimePicker } from './date-time';
 interface AddEventModalProps {
     isOpen: boolean;
     onOpenChange: (isOpen: boolean) => void;
-    date?: Date;
-    endDate?: Date;
+    start?: Date;
+    end?: Date;
     children?: React.ReactNode;
 }
 
 export const AddEventModal: React.FC<AddEventModalProps> = ({
     isOpen,
     onOpenChange,
-    date = new Date(),
-    endDate,
+    start: _start = new Date(),
+    end: _end,
     children,
 }) => {
     const { sendMessage } = useWebSocketContext();
 
     const [title, setTitle] = useState('');
     const [description, setDescription] = useState('');
-    const [start, setStart] = useState<Date | undefined>(date);
-    const [end, setEnd] = useState<Date | undefined>(endDate || new Date(date.getTime() + 60 * 60 * 1000));
+    const [start, setStart] = useState<Date>(_start);
+    const [end, setEnd] = useState<Date>(_end || new Date(_start.getTime() + 60 * 60 * 1000));
+
+    useEffect(() => {
+        if (start.getHours() !== _start.getHours()) {
+            setStart(_start);
+            setEnd(new Date(_start.getTime() + 60 * 60 * 1000));
+        }
+    }, [_start, start]);
+
+    useEffect(() => {
+        if (_end && end.getHours() !== _end.getHours()) {
+            setEnd(_end);
+        }
+    }, [_end, end]);
 
     const possibleColors = ["default", "red", "orange", "yellow", "green", "teal", "cyan", "blue", "indigo", "purple", "pink"]
     const [color, setColor] = useState('default');
@@ -91,7 +104,7 @@ export const AddEventModal: React.FC<AddEventModalProps> = ({
                 <DialogHeader>
                     <DialogTitle>{t('add_event')}</DialogTitle>
                     <DialogDescription>
-                        {format(date, 'PP', { locale })}
+                        {format(_start, 'PP', { locale })}
                     </DialogDescription>
                 </DialogHeader>
                 <div className="flex flex-col gap-8">

@@ -12,7 +12,7 @@ import { enUS } from "date-fns/locale"
 
 interface DateTimePickerProps {
     date: Date | undefined
-    setDate: (date: Date | undefined) => void
+    setDate: (date: Date) => void
     className?: string,
     locale?: Locale
 }

@@ -44,7 +44,7 @@ export default function Agenda({ lng, events = [] }: { lng: Locale, events: Cale
 
                     <span className="flex-1" />
 
-                    <AddEventModal isOpen={isOpen} onOpenChange={setOpen}>
+                    <AddEventModal isOpen={isOpen} onOpenChange={setOpen} start={new Date()}>
                         <Button
                             size={"icon"}
                             className="w-fit h-9 px-4 py-2"

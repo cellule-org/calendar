@@ -251,6 +251,15 @@ const CalendarViewSelector = () => {
 }
 CalendarViewSelector.displayName = 'CalendarViewSelector';
 
+const clearMinutes = (date: Date) => {
+    const newDate = new Date(date);
+    newDate.setMinutes(0);
+    newDate.setSeconds(0);
+    newDate.setMilliseconds(0);
+    console.log(newDate);
+    return newDate;
+}
+
 const EventGroup = ({
     events,
     hour,
@@ -307,11 +316,11 @@ const EventGroup = ({
                                             </div>
                                         </ContextMenuTrigger>
                                         <ContextMenuContent>
-                                            <ContextMenuLabel>{format(hour, 'EEEE, dd/MM HH:mm', { locale })}</ContextMenuLabel>
+                                            <ContextMenuLabel>{format(clearMinutes(hour), 'EEEE, dd/MM HH:00', { locale })}</ContextMenuLabel>
                                             <ContextMenuSeparator />
                                             <ContextMenuItem
                                                 onClick={() => {
-                                                    setSelectedDate(hour);
+                                                    setSelectedDate(clearMinutes(hour));
                                                     setCreateOpen(true);
                                                 }}
                                             >
@@ -344,7 +353,7 @@ const EventGroup = ({
                     </ContextMenuItem>
                 </ContextMenuContent>
             </ContextMenu>
-            <AddEventModal isOpen={createOpen} onOpenChange={setCreateOpen} date={selectedDate || undefined} />
+            <AddEventModal isOpen={createOpen} onOpenChange={setCreateOpen} start={selectedDate || undefined} />
             <RemoveEventModal isOpen={removeOpen} onOpenChange={setRemoveOpen} event={selectedEvent} />
         </>
     );
@@ -535,7 +544,7 @@ const CalendarMonthView = () => {
                                     <ContextMenuLabel>{format(_date, 'EEEE, dd/MM', { locale })}</ContextMenuLabel>
                                     <ContextMenuSeparator />
                                     <ContextMenuItem onClick={() => {
-                                        setSelectedDate(_date);
+                                        setSelectedDate(setHours(_date, 12));
                                         setCreateOpen(true);
                                     }}>
                                         {t('add_event')}
@@ -546,7 +555,7 @@ const CalendarMonthView = () => {
                     })}
                 </div>
             </div>
-            <AddEventModal isOpen={createOpen} onOpenChange={setCreateOpen} date={selectedDate || undefined} />
+            <AddEventModal isOpen={createOpen} onOpenChange={setCreateOpen} start={selectedDate || undefined} />
         </>
     );
 };
@@ -639,7 +648,7 @@ const CalendarYearView = () => {
                 }
             </div>
 
-            <AddEventModal isOpen={createOpen} onOpenChange={setCreateOpen} date={selectedDate || undefined} />
+            <AddEventModal isOpen={createOpen} onOpenChange={setCreateOpen} start={selectedDate || undefined} />
         </>
 
     );
