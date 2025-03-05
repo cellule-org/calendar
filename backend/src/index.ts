@@ -1,8 +1,9 @@
 import express, { Request, Response, NextFunction } from 'express';
 import { createServer } from 'http';
 import path from 'path';
-import { WebSocket, WebSocketServer } from 'ws';
+import { RawData, WebSocket, WebSocketServer } from 'ws';
 import { PrismaClient } from '@prisma/client'
+import { existsSync } from 'fs';
 
 const prisma = new PrismaClient();
 
@@ -28,11 +29,21 @@ app.get("/assets/:filename", (req: Request, res: Response) => {
 
 app.get("/locales/:lng/translation.json", (req: Request, res: Response) => {
     const { lng } = req.params;
-    res.sendFile(path.join(__dirname, 'dist', 'locales', lng, 'translation.json'));
+    const filePath = path.join(__dirname, 'dist', 'locales', lng, 'translation.json');
+
+    if (!existsSync(filePath)) {
+        const [primaryLng] = lng.split('-');
+        const fallbackFilePath = path.join(__dirname, 'dist', 'locales', primaryLng, 'translation.json');
+        if (existsSync(fallbackFilePath)) {
+            return res.sendFile(fallbackFilePath);
+        }
+    }
+
+    res.sendFile(filePath);
 });
 
-const messageHandler = (message: string) => {
-    const parsedMessage = JSON.parse(message);
+const messageHandler = (message: RawData) => {
+    const parsedMessage = JSON.parse(message.toString());
     switch (parsedMessage.type) {
         case 'message':
             console.log('Received message:', parsedMessage.data);
@@ -202,7 +213,7 @@ const start = async () => {
         }));
 
         core_ws.on('message', (message) => {
-            messageHandler(message.toString());
+            messageHandler(message);
         });
         core_ws.on('close', () => {
             console.log('WebSocket connection closed, clearing event and restarting...');
