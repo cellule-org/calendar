@@ -17,7 +17,7 @@ const websocketConfig = {
 }
 
 const handleGlobalMessage = (_data: any) => {
-    //console.log("Message global", data)
+    return
 }
 
 const handleLoadEvents = (data: any) => {

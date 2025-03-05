@@ -61,7 +61,6 @@ export const AddEventModal: React.FC<AddEventModalProps> = ({
         });
     };
 
-    // Fonction helper pour générer les classes de couleur
     const getBorderColorClass = (currentColor: string, selectedColor: string) => {
         if (currentColor !== selectedColor) return 'border-gray-300';
 

@@ -1,7 +1,6 @@
 import { createContext, useContext, ReactNode } from "react"
 import { useWebSocket } from "./use-web-socket"
 
-// Type pour les options de configuration du WebSocket
 export interface WebSocketProviderConfig {
   url: string
   reconnectAttempts?: number
@@ -9,8 +8,6 @@ export interface WebSocketProviderConfig {
   protocols?: string | string[]
   autoConnect?: boolean
 }
-
-// Type pour le contexte
 interface WebSocketContextType {
   status: "connecting" | "open" | "closing" | "closed" | "error"
   messages: any[]
@@ -21,10 +18,8 @@ interface WebSocketContextType {
   onMessage?: (data: any) => void
 }
 
-// Création du contexte avec une valeur par défaut
 const WebSocketContext = createContext<WebSocketContextType | null>(null)
 
-// Hook personnalisé pour utiliser le contexte WebSocket
 export function useWebSocketContext() {
   const context = useContext(WebSocketContext)
   if (!context) {
@@ -33,7 +28,6 @@ export function useWebSocketContext() {
   return context
 }
 
-// Props pour le provider
 interface WebSocketProviderProps {
   children: ReactNode
   config: WebSocketProviderConfig
@@ -43,7 +37,6 @@ interface WebSocketProviderProps {
   onError?: (event: Event) => void
 }
 
-// Composant Provider qui utilise notre hook useWebSocket
 export function WebSocketProvider({
   children,
   config,
