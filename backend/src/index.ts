@@ -75,7 +75,7 @@ const createWebSocket = () => {
     return wss;
 }
 
-const handleAddEvent = async (ws: WebSocket, data: any) => {
+const handleAddEvent = async (core_ws: WebSocket, ws: WebSocket, data: any) => {
     const { title, description, start, end, color } = data;
 
     const startDateTime = new Date(start);
@@ -103,9 +103,17 @@ const handleAddEvent = async (ws: WebSocket, data: any) => {
             }));
         }
     });
+
+    core_ws.send(JSON.stringify({
+        type: 'submit',
+        data: {
+            id: 'new_calendar_event',
+            data: created_event
+        }
+    }));
 };
 
-const handleRemoveEvent = async (ws: WebSocket, data: any) => {
+const handleRemoveEvent = async (core_ws: WebSocket, ws: WebSocket, data: any) => {
     const { id } = data;
 
     await prisma.event.delete({
@@ -124,10 +132,24 @@ const handleRemoveEvent = async (ws: WebSocket, data: any) => {
             }));
         }
     });
+
+    core_ws.send(JSON.stringify({
+        type: 'submit',
+        data: {
+            id: 'remove_calendar_event',
+            data: {
+                id
+            }
+        }
+    }));
 };
 
 const start = async () => {
     try {
+        core_ws = await connectToWebSocketServer(process.env.CORE_WS_URL || 'ws://core-app:3000');
+        if (!core_ws) {
+            throw new Error('Failed to connect to core WebSocket server');
+        }
         calendar_ws = createWebSocket() as WebSocketServer;
 
         calendar_ws.on('connection', async (ws) => {
@@ -138,12 +160,15 @@ const start = async () => {
 
             ws.on('message', async (message) => {
                 const parsedMessage = JSON.parse(message.toString());
+                if (!core_ws) { // Can't happen, but TypeScript doesn't know that
+                    return;
+                }
                 switch (parsedMessage.type) {
                     case 'add_event':
-                        await handleAddEvent(ws, parsedMessage.data);
+                        await handleAddEvent(core_ws, ws, parsedMessage.data);
                         break;
                     case 'remove_event':
-                        await handleRemoveEvent(ws, parsedMessage.data);
+                        await handleRemoveEvent(core_ws, ws, parsedMessage.data);
                         break;
                     default:
                         console.warn(`Unknown message type: ${parsedMessage.type}`);
@@ -151,12 +176,20 @@ const start = async () => {
             });
         });
 
-        core_ws = await connectToWebSocketServer(process.env.CORE_WS_URL || 'ws://core-app:3000');
         core_ws.send(JSON.stringify({
             type: "create",
             data: {
                 id: "new_calendar_event",
                 name: "New Calendar Event",
+                public: false
+            }
+        }));
+
+        core_ws.send(JSON.stringify({
+            type: "create",
+            data: {
+                id: "remove_calendar_event",
+                name: "Remove Calendar Event",
                 public: false
             }
         }));
