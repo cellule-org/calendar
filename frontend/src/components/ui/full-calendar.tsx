@@ -564,7 +564,7 @@ const CalendarYearView = () => {
     const [createOpen, setCreateOpen] = useState(false);
     const [selectedDate, setSelectedDate] = useState<Date | null>(null);
 
-    const { view, date, today, locale, setView, setDate } = useCalendar();
+    const { view, date, today, locale, setView, setDate, events } = useCalendar();
     const { t } = useTranslation();
 
     const months = useMemo(() => {
@@ -601,12 +601,17 @@ const CalendarYearView = () => {
 
                         <div className="grid gap-x-2 text-center grid-cols-7 text-xs tabular-nums">
                             {days.map((_date) => {
+                                const currentEvents = events.filter((event) =>
+                                    isSameDay(event.start, _date)
+                                ).slice(0, 3);
+
                                 return (
                                     <ContextMenu>
                                         <ContextMenuTrigger>
                                             <div
                                                 key={_date.toString()}
                                                 className={cn(
+                                                    'relative',
                                                     getMonth(_date) !== i && 'text-muted-foreground'
                                                 )}
                                             >
@@ -625,6 +630,17 @@ const CalendarYearView = () => {
                                                 >
                                                     {format(_date, 'd')}
                                                 </div>
+                                                <div className="flex justify-center mb-2 space-x-1 w-full bottom-0 absolute">
+                                                    {currentEvents.map((event) => (
+                                                        <div
+                                                            key={event.id}
+                                                            className={cn(
+                                                                '!size-1 rounded-full',
+                                                                monthEventVariants({ variant: event.color })
+                                                            )}
+                                                        ></div>
+                                                    ))}
+                                                </div>
                                             </div>
                                         </ContextMenuTrigger>
                                         <ContextMenuContent>
@@ -635,22 +651,20 @@ const CalendarYearView = () => {
                                             <ContextMenuItem onClick={() => {
                                                 setSelectedDate(_date);
                                                 setCreateOpen(true);
-                                            }}>
-                                                {t('add_event')}
-                                            </ContextMenuItem>
+                                            }}></ContextMenuItem>
+                                            {t('add_event')}
                                         </ContextMenuContent>
                                     </ContextMenu>
                                 );
                             })}
+
                         </div>
                     </div>
-                ))
-                }
-            </div>
+                ))}
+            </div >
 
             <AddEventModal isOpen={createOpen} onOpenChange={setCreateOpen} start={selectedDate || undefined} />
         </>
-
     );
 };
 
