@@ -18,7 +18,6 @@ This project is a "template" designed to provide a starting point for new softwa
 ## TODO
 
 - **Mobile Development**: Work on the mobile part of the project to ensure compatibility and functionality across mobile devices.
-- **Event Creation**: Ensure that when creating an event, it is scheduled for the date and time where the user clicked, rather than the current date and time.
 - **Event Creation on Desktop**: Implement functionality to create an event by double-clicking on a time slot.
 - **Event Creation on Mobile**: Implement functionality to create an event by long-pressing on a time slot.
 
